@@ -20,7 +20,6 @@ PROVIDER_MAP = ({
 mast_home = os.environ["MAST_HOME"]
 
 
-@logged("mast.datapower.status")
 def get_data_file(f):
     _root = os.path.dirname(__file__)
     path = os.path.join(_root, "data", f)
@@ -66,7 +65,6 @@ class WebPlugin(Plugin):
 
         t = Timestamp()
         appliances = flask.request.form.getlist('appliances[]')
-        logger.debug("Appliances: {}".format(str(appliances)))
         credentials = [xordecode(_, key=xorencode(
                               flask.request.cookies["9x4h/mmek/j.ahba.ckhafn"]))
                           for _ in flask.request.form.getlist('credentials[]')]
@@ -76,7 +74,6 @@ class WebPlugin(Plugin):
         env = datapower.Environment(appliances, credentials, check_hostname=False)
 
         providers = flask.request.form.getlist("providers[]")
-        logger.debug("Providers: {}".format(str(providers)))
 
         resp = {
             "appliances": appliances,
@@ -86,10 +83,6 @@ class WebPlugin(Plugin):
             _provider = provider.split(".")[0]
             resp[provider] = []
             for appliance in env.appliances:
-                logger.debug(
-                    "Checking {} on {}".format(
-                        _provider,
-                        appliance.hostname))
                 try:
                     _status = appliance.get_status(_provider)
                 except datapower.AuthenticationFailure:
