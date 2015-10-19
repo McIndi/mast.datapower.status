@@ -125,7 +125,7 @@ $.get("/config/status", function( data ){
         });
 
         data["providers[]"] = get_selected_providers();
-        data["check_hostname"] = false;
+        data["check_hostname"] = !$( "#addApplianceForm" ).find("input[name='global_no_check_hostname']").prop('checked');
 
         $.ajax({
             type: "POST",

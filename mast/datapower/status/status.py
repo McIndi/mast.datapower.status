@@ -64,6 +64,7 @@ class WebPlugin(Plugin):
         logger = make_logger("mast.datapower.status")
 
         t = Timestamp()
+        check_hostname = "true" in flask.request.form.get('check_hostname').lower()
         appliances = flask.request.form.getlist('appliances[]')
         credentials = [xordecode(_, key=xorencode(
                               flask.request.cookies["9x4h/mmek/j.ahba.ckhafn"]))
@@ -71,7 +72,7 @@ class WebPlugin(Plugin):
         if not appliances:
             return flask.abort(404)
         # TODO: make this an option
-        env = datapower.Environment(appliances, credentials, check_hostname=False)
+        env = datapower.Environment(appliances, credentials, check_hostname=check_hostname)
 
         providers = flask.request.form.getlist("providers[]")
 
