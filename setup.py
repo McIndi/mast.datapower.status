@@ -25,14 +25,9 @@ setup(
             'status = mast.datapower.status:WebPlugin'
         ]
     },
-    data_files=[
-        ("mast/datapower/status/data", [
-            "./mast/datapower/status/docroot/plugin.js",
-            "./mast/datapower/status/docroot/plugin.css",
-            "./mast/datapower/status/docroot/plugin.html",
-            "./mast/datapower/status/docroot/plugin.conf"
-        ])
-    ],
+    package_data={
+        "mast.datapower.status": ["docroot/*"]
+    },
     long_description=read('README.md'),
     classifiers=[
         "Development Status :: 5 - Production/Stable",
