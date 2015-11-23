@@ -1,10 +1,12 @@
 import os
 import flask
-from mast.logging import make_logger, logged
 from time import sleep
+from mast.plugins.web import Plugin
 from mast.timestamp import Timestamp
-from mast.xor import xordecode, xorencode
 from mast.datapower import datapower
+from mast.xor import xordecode, xorencode
+from mast.logging import make_logger, logged
+
 
 PROVIDER_MAP = ({
     "CPUUsage.tenSeconds": datapower.STATUS_XPATH + '/CPUUsage/tenSeconds',
@@ -27,10 +29,6 @@ def get_data_file(f):
         return fin.read()
 
 
-from mast.plugins.web import Plugin
-import mast.plugin_utils.plugin_functions as pf
-from functools import partial, update_wrapper
-
 class WebPlugin(Plugin):
     def __init__(self):
         logger = make_logger("mast.status")
@@ -48,8 +46,6 @@ class WebPlugin(Plugin):
             with open(config_file, "w") as fout:
                 fout.write(get_data_file("plugin.conf"))
 
-
-
     def css(self):
         return get_data_file("plugin.css")
 
@@ -64,15 +60,21 @@ class WebPlugin(Plugin):
         logger = make_logger("mast.datapower.status")
 
         t = Timestamp()
-        check_hostname = "true" in flask.request.form.get('check_hostname').lower()
+        check_hostname = "true" in flask.request.form.get(
+            'check_hostname').lower()
         appliances = flask.request.form.getlist('appliances[]')
-        credentials = [xordecode(_, key=xorencode(
-                              flask.request.cookies["9x4h/mmek/j.ahba.ckhafn"]))
-                          for _ in flask.request.form.getlist('credentials[]')]
+        credentials = [xordecode(
+            _,
+            key=xorencode(
+                flask.request.cookies["9x4h/mmek/j.ahba.ckhafn"]))
+            for _ in flask.request.form.getlist('credentials[]')]
         if not appliances:
             return flask.abort(404)
-        # TODO: make this an option
-        env = datapower.Environment(appliances, credentials, check_hostname=check_hostname)
+
+        env = datapower.Environment(
+            appliances,
+            credentials,
+            check_hostname=check_hostname)
 
         providers = flask.request.form.getlist("providers[]")
 
@@ -88,8 +90,8 @@ class WebPlugin(Plugin):
                     _status = appliance.get_status(_provider)
                 except datapower.AuthenticationFailure:
                     # This is to handle an intermittent authentication failure
-                    # sometimes issued by the DataPower. We will sleep 2 seconds
-                    # and try again
+                    # sometimes issued by the DataPower. We will sleep 2
+                    # seconds and try again
                     sleep(2)
                     try:
                         return self.status()
@@ -104,4 +106,3 @@ class WebPlugin(Plugin):
                 metric = _status.xml.find(PROVIDER_MAP[provider]).text
                 resp[provider].append(metric)
         return flask.jsonify(resp)
-
